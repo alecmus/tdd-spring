@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author Alec Musasa
  * @since 06 May 2025
@@ -36,4 +39,17 @@ public class Developer {
 
     @Enumerated(EnumType.STRING)
     private Specialization specialization;
+
+    @ManyToMany(mappedBy = "developers")
+    @Builder.Default
+    private Set<Project> projects = new HashSet<>();
+
+    @PreRemove
+    private void removeAssociationsWithProjects() {
+        if (projects != null) {
+            for (Project project : projects) {
+                project.getDevelopers().remove(this);
+            }
+        }
+    }
 }

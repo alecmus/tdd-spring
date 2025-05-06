@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author Alec Musasa
  * @since 06 May 2025
@@ -31,4 +34,12 @@ public class Project {
 
     @Enumerated(EnumType.STRING)
     private ProjectStatus status;
+
+    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinTable(name = "project_developer",
+            joinColumns = @JoinColumn(name = "project_id"),
+            inverseJoinColumns = @JoinColumn(name = "developer_id")
+    )
+    @Builder.Default
+    private Set<Developer> developers = new HashSet<>();
 }
