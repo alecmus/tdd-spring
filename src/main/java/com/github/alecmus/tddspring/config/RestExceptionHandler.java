@@ -1,5 +1,6 @@
 package com.github.alecmus.tddspring.config;
 
+import com.github.alecmus.tddspring.dto.ErrorDTO;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +15,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class RestExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Void> handleDataIntegrityViolationException() {
-        return ResponseEntity.status(HttpStatus.CONFLICT).build();
+    public ResponseEntity<ErrorDTO> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+        ErrorDTO errorDTO = ErrorDTO.builder()
+                .message("Data integrity violation: " + ex.getMostSpecificCause().getMessage())
+                .statusCode(HttpStatus.CONFLICT.value())
+                .build();
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorDTO);
     }
 }
