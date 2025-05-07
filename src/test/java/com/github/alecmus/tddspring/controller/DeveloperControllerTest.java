@@ -13,9 +13,11 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -98,13 +100,15 @@ class DeveloperControllerTest {
 
         // mock the service layer
         given(developerService.create(requestDTO))
-                .willThrow(DataIntegrityViolationException.class);
+                .willThrow(new DataIntegrityViolationException("Developer with the given ID already exists"));
 
         // test the endpoint
         mockMvc.perform(post("/developer")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDTO)))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.statusCode").value(HttpStatus.CONFLICT.value()))
+                .andExpect(jsonPath("$.message", containsString("already exists")));
 
         // verify that the mock was used
         verify(developerService).create(requestDTO);
